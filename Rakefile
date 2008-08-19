@@ -13,6 +13,30 @@ end
 
 task :default => :list
 
+task :testing do
+  # puts "Tasks before missing:\n"+Rake::Task.tasks.inspect
+  ARGV.shift
+  
+  ARGV.each do |task_name|
+    sake_file = task_name.gsub(':','/') + '.sake'
+    import(sake_file)
+  end
+  
+  Rake.application.load_imports
+  
+  # ARGV.each do |task_name|
+  #   task_file = task_name.gsub(':','/') + '.sake'
+  #   `rake -f #{task_file} #{task_name}`
+  # end
+  new_task = ARGV.first
+  # Rake::Task.define_task(new_task) do 
+  #   p 'running new task!'
+  # end
+  # import('folder/compress.sake')
+  # Rake.application.load_imports
+  # puts "Tasks end of missing:\n"+Rake::Task.tasks.inspect
+end
+
 # helpers
 require 'ostruct'
 class SakeTask < OpenStruct
