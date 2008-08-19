@@ -14,15 +14,17 @@ end
 task :default => :list
 
 task :testing do
-  # puts "Tasks before missing:\n"+Rake::Task.tasks.inspect
+  puts "Tasks before missing:\n"+Rake::Task.tasks.inspect
   ARGV.shift
   
   ARGV.each do |task_name|
     sake_file = task_name.gsub(':','/') + '.sake'
-    import(sake_file)
+    import(sake_file) if File.exists?(sake_file)
+    
+    Rake.application.load_imports
+    (ARGV << Rake::Task[task_name].prerequisites).flatten!
   end
   
-  Rake.application.load_imports
   
   # ARGV.each do |task_name|
   #   task_file = task_name.gsub(':','/') + '.sake'
@@ -34,7 +36,7 @@ task :testing do
   # end
   # import('folder/compress.sake')
   # Rake.application.load_imports
-  # puts "Tasks end of missing:\n"+Rake::Task.tasks.inspect
+  puts "Tasks end of missing:\n"+Rake::Task.tasks.inspect
 end
 
 # helpers
