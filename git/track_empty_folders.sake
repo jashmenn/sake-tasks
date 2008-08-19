@@ -1,0 +1,6 @@
+namespace :git do
+  desc "Places a .gitignore in empty folders"
+  task :track_empty_folders do
+    system "find . -depth -type d -empty -exec touch {}/.gitignore ';'"
+  end
+end
