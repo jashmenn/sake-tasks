@@ -57,6 +57,14 @@ So, to create a task `foo:bar:baz`, you'll need to add a folder `foo/bar` and cr
 	  end
 	end
 
+### Testing tasks (even if not installed)
+
+Whilst a task is in development you can execute it locally, without sake, using `rake testrun`.
+
+To run the local version of foo/bar/baz.sake, use:
+
+	rake testrun foo:bar:baz
+
 ### Installing individual tasks/files
 
 The `rake install` task can selectively install only tasks/files that you are working on, rather than all the files in your repository, using either the `ONLY_FILES` or `ONLY_TASKS` environment variable.
