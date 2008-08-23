@@ -1,0 +1,64 @@
+namespace :archive do
+  task :create do
+    archive_types = {}
+    archive_types['.tar.gz']   = 'tar -cvpzf'
+    archive_types['.tar.bz2']  = 'tar -cvpjf'
+    
+    # add sugar
+    class << archive_types
+      alias :extensions :keys
+      alias :commands   :values
+    end
+    
+    unless dst = ENV['DST']
+      puts "Please provide DST. E.g. DST='folder.tar.gz'"
+      exit(1)
+    end
+    # file, ext_name = s2.scan(/(.+)(.tar2.gz)/)
+    # file_name, file_ext = dst.split('.', 2)
+    # file_name, file_ext = archive_types.extensions.detect do |ext|
+    #                                     dst.scan(Regexp.new("(.+)(#{ext})")).flatten
+    #                                   end
+    # file_name, file_ext = while((result ||= []).empty?)
+    #                       puts 'loop'
+    #                       result = [1]
+    #                     end
+    file_ext = archive_types.extensions.detect{|ext| !dst.scan(ext).empty?}
+    unless file_ext
+      err <<-TEXT
+        Requested archive type is not supported.
+        Use any of: #{archive_types.extensions.join(", ")}
+      TEXT
+      # msg(<<-TEXT2)
+      #   Hier nog wat van die messages
+      #   hier kan alles instaan
+      #   beetje inspringen
+      # TEXT2
+      # exit(1)
+    end
+    
+    file_name = dst.split(file_ext).first
+    
+    # puts "name:'#{file_name}' (found?:#{File.exists?(file_name)}), ext:'#{file_ext}'"
+    # file_name, file_ext = for ext in archive_types.extensions
+    #                         # dst.scan(/(.+)(.tar2.gz)/)
+    #                         result = dst.scan(Regexp.new("(.+)(#{ext})")).flatten
+    #                         break(result) if !result.empty?
+    #                       end
+    # dst.scan(Regexp.new("(.+)"))
+    # dst = File.basename(dst) # folder/file will be saved as file.<ext> 
+    # unless archive_types.extensions.include?(file_ext)
+    #   puts %Q{
+    #     Archive type '#{file_ext}' is not supported.
+    #     Use any of: #{archive_types.extensions.join(', ')}
+    #   }.gsub(/^ +/,'').strip
+    #   exit(1)
+    # end
+    
+    cmd = archive_types[file_ext] << " #{dst} #{file_name}"
+    
+    puts "name:'#{file_name}' (found?:#{File.exists?(file_name)}), ext:'#{file_ext}'"
+    puts "cmd: '#{cmd}'"
+    sh cmd
+  end
+end
