@@ -1,0 +1,19 @@
+namespace 'gem' do
+  desc "Builds and installs a gem within its source; uses 'rake install[_gem]' or the gemspec"
+  task :install do
+    install_tasks = `rake -T | grep "^rake install" | sed -e "s/#.*//" | sed -e "s/^rake //"`.split("\n")
+    if install_tasks.size > 0
+      task = install_tasks.first.strip
+      puts "Running 'rake #{task}'..."
+      sh "rake #{task}"
+      exit
+    end
+    if gemspec = Dir['*.gemspec'].first
+      puts "Building #{gemspec}"
+      sh "gem build #{gemspec}"
+      gem = `ls -t *.gem`.split("\n").first
+      puts "Installing #{gem}"
+      sh "sudo gem install #{gem}"
+    end
+  end
+end
