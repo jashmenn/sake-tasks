@@ -1,0 +1,37 @@
+namespace 'git' do
+  namespace 'src' do
+    desc "Downloads and installs latest version of git"
+    task :install        => "git:src:latest_version" do
+      download_url       = ENV['GIT_DOWNLOAD_URL']
+      git_package        = File.basename(download_url)
+      git_src_folder     = git_package.gsub(/.tar.gz/, '')
+      target_base_folder = '/usr/local'
+      usr_src_folder     = File.join(target_base_folder, 'src')
+      require "fileutils"
+      FileUtils.mkdir_p usr_src_folder
+      FileUtils.chdir usr_src_folder do
+        if File.exists?(git_package)
+          puts "File #{git_package} already downloaded, skipping download..."
+        else
+          `wget #{download_url}`
+        end
+        
+        if File.exists?(git_src_folder)
+          puts "Removing existing #{git_src_folder} source"
+          FileUtils.rm_rf git_src_folder
+        end
+        
+        puts "Unpacking #{git_src_folder}"
+        `tar xfv #{git_package}`
+        
+        FileUtils.chdir git_src_folder do
+          puts "Installing to #{target_base_folder}"
+          sh "make prefix=#{target_base_folder} all"
+          sh "sudo make prefix=#{target_base_folder} install all"
+        end
+      end
+      
+      puts "Run 'sake git:manpages:install' to install manpages for #{`git --version`}"
+    end
+  end
+end

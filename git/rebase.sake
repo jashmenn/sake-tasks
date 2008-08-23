@@ -1,0 +1,39 @@
+namespace :git do
+  desc "Pull new commits from the SVN repository"
+  task :rebase do
+    `git diff-files --quiet`
+    if $?.exitstatus == 1
+      stash = true
+      clear = `git stash list`.scan("\n").size == 0
+      puts "* Saving changes..."
+      `git stash save`
+    else
+      stash = false
+    end
+
+    branch = `git branch | grep "*"`.strip[2..-1]
+    if branch != "master"
+      switch = true
+      `git checkout master`
+      puts "* Switching back to master..."
+    else
+      switch = false
+    end
+
+    puts "* Pulling in new commits..."
+    sh "git svn fetch"
+    sh "git rebase trunk"
+
+    if switch
+      puts "* Porting changes into #{branch}..."
+      `git checkout #{branch}`
+      sh "git rebase master"
+    end
+
+    if stash
+      puts "* Applying changes..."
+      sh "git stash apply"
+      `git stash clear` if clear
+    end
+  end
+end

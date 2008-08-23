@@ -1,0 +1,21 @@
+namespace 'git' do
+  namespace 'src' do
+    task :latest_version do
+      require "rubygems"
+      begin
+        gem 'hpricot'
+        require 'hpricot'
+      rescue LoadError
+        puts "REQUIREMENT: Hpricot"
+        puts "Installation: sudo gem install hpricot"
+        exit
+      end
+      require "open-uri"
+      doc = open('http://git.or.cz/').read
+      if download_url = doc.match(%r{http://kernel.org/pub/software/scm/git/git-([\d.]+).tar.gz})
+        ENV['GIT_DOWNLOAD_URL'] = download_url[0]
+        puts "Current git src version: #{$1}"
+      end
+    end
+  end
+end

@@ -23,15 +23,18 @@ http://errtheblog.com/posts/60-sake-bomb
 
 The following sake tasks are installed:
 
-  sake check:erb                           # Find all .erb or .rhtml files in the current directory tree and report any syntax errors
-  sake check:ruby                          # Find all .rb files in the current directory tree and report any syntax errors
-  sake check:yaml                          # Find all .yml files in the current directory tree and report any syntax errors
+	sake check:erb                           # Find all .erb or .rhtml files in the current directory tree and report any syntax errors
+	sake check:ruby                          # Find all .rb files in the current directory tree and report any syntax errors
+	sake check:yaml                          # Find all .yml files in the current directory tree and report any syntax errors
 	sake git:analyze:commits:flog_frequent   # Flog the most commonly revised files in the git history
 	sake git:close                           # Delete the current branch and switch back to master
 	sake git:manpages:install                # Install man pages for current git version
 	sake git:open                            # Create a new branch off master
+	sake git:publish                         # Push all changes to the SVN repository
 	sake git:pull                            # Pull new commits from the repository
 	sake git:push                            # Push all changes to the repository
+	sake git:rebase                          # Pull new commits from the SVN repository
+	sake git:src:install                     # Downloads and installs latest version of git
 	sake git:status                          # Show the current status of the checkout
 	sake git:topic                           # Create a new topic branch
 	sake git:update                          # Pull new commits from the repository
@@ -53,6 +56,31 @@ So, to create a task `foo:bar:baz`, you'll need to add a folder `foo/bar` and cr
 	    end
 	  end
 	end
+
+### Testing tasks (even if not installed)
+
+Whilst a task is in development you can execute it locally, without sake, using `rake testrun`.
+
+To run the local version of foo/bar/baz.sake, use:
+
+	rake testrun foo:bar:baz
+
+### Installing individual tasks/files
+
+The `rake install` task can selectively install only tasks/files that you are working on, rather than all the files in your repository, using either the `ONLY_FILES` or `ONLY_TASKS` environment variable.
+
+For example, to restrict `rake install` to only re-install a task `foo:bar:baz` you can either use:
+
+	rake install ONLY_FILES=foo/bar/baz.sake
+	rake install ONLY_TASKS=foo:bar:baz
+
+The values can be comma-separated lists.
+
+So for iterative install & run development you could run the install task and the sake task via the same command line:
+
+	rake install ONLY_TASKS=foo:bar:baz && sake foo:bar:baz --trace
+
+The optional `--trace` runs sake in trace mode so useful stacktrace information is given as necessary.
 
 ### TextMate users
 

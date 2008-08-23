@@ -1,0 +1,28 @@
+namespace :git do
+  desc "Push all changes to the SVN repository"
+  task :publish do
+    branch = `git branch | grep "*"`.strip[2..-1]
+    if branch != "master"
+      `git diff-files --quiet`
+      if $?.exitstatus == 1
+        puts "You have outstanding changes. Please commit them first."
+        exit 1
+      end
+
+      puts "* Merging topic '#{branch}' back into master..."
+      `git checkout master`
+      sh "git merge #{branch}"
+      switch = true
+    else
+      switch = false
+    end
+
+    puts "* Pushing changes..."
+    sh "git svn dcommit"
+
+    if switch
+      puts "* Switching back to #{branch}..."
+      `git checkout #{branch}`
+    end
+  end
+end
