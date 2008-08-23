@@ -1,63 +1,30 @@
-desc "List underlying sake-tasks"
-task :list do
-  tasks.each {|task| puts "%-35s %s" % [task.name, task.desc]  }
-end
+require "helpers"
 
-desc "Install sake tasks, uninstalling any pre-existing tasks first"
+desc "Install sake tasks, uninstalling any pre-existing tasks first; can pass ONLY_FILES and ONLY_TASKS env vars"
 task :install do
-  tasks.map do |task|
-    puts `sake -u #{task.name}`
-    puts `sake -i #{task.file}`
+  task_files = Dir['**/*.sake']
+  only_files = ENV['ONLY_FILES'] && ENV['ONLY_FILES'].split(',')
+  only_tasks = ENV['ONLY_TASKS'] && ENV['ONLY_TASKS'].split(',')
+  task_files.sort.map do |task_file|
+    next if only_files && !only_files.include?(task_file)
+    sake_task = task_file.gsub('/', ':').gsub('.sake','')
+    next if only_tasks && !only_tasks.include?(sake_task)
+    `sake -u #{sake_task}`
+    puts `sake -i #{task_file}`
   end
 end
 
-task :default => :list
-
-task :testing do
-  puts "Tasks before missing:\n"+Rake::Task.tasks.inspect
-  ARGV.shift
+desc "Run latest source of task"
+task :testrun do
+  task_names = ARGV.grep(/(.+:)+/)
   
-  ARGV.each do |task_name|
+  task_names.each do |task_name|
     sake_file = task_name.gsub(':','/') + '.sake'
     import(sake_file) if File.exists?(sake_file)
-    
+
     Rake.application.load_imports
-    (ARGV << Rake::Task[task_name].prerequisites).flatten!
-  end
-  
-  
-  # ARGV.each do |task_name|
-  #   task_file = task_name.gsub(':','/') + '.sake'
-  #   `rake -f #{task_file} #{task_name}`
-  # end
-  new_task = ARGV.first
-  # Rake::Task.define_task(new_task) do 
-  #   p 'running new task!'
-  # end
-  # import('folder/compress.sake')
-  # Rake.application.load_imports
-  puts "Tasks end of missing:\n"+Rake::Task.tasks.inspect
-end
-
-# helpers
-require 'ostruct'
-class SakeTask < OpenStruct
-  def self.from_file(task_file)
-    name = task_file.gsub('/', ':').gsub('.sake','')
-    desc = `cat #{task_file}`.chomp[/desc +(?:["'](.*)['"])\n/,1]
-    file = task_file
-    new({:name=>name,:desc=>desc,:file=>task_file})
+    (task_names << Rake::Task[task_name].prerequisites).flatten!
   end
 end
 
-# Array of sake-files relative to current path
-# e.g. ['git/status.sake','git/pull.sake']
-def task_files
-  dir = (ENV['DIR'] ||= '')
-  @task_files ||= Dir['**/*.sake'].grep(Regexp.new(dir)).sort
-end
-
-# Array of SakeTasks
-def tasks
-  @tasks = task_files.collect{|tf| SakeTask.from_file(tf)}
-end
+task :default => :install
