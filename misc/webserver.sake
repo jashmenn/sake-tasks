@@ -1,0 +1,16 @@
+namespace :misc do
+  desc "Start simple webserver. Accepts PORT (default:8000) and DOCROOT (default:.)."
+  task :webserver do
+    require 'webrick'
+    
+    port = (ENV['PORT'] ? ENV['PORT'].to_i : 8000)
+    
+    docroot = (ENV['DOCROOT'] || %x{pwd}).strip
+    
+    s = WEBrick::HTTPServer.new(:Port=>port,:DocumentRoot=>docroot)
+    
+    trap('INT'){ s.shutdown }
+    
+    s.start
+  end
+end
