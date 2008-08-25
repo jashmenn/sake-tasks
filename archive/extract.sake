@@ -1,0 +1,35 @@
+namespace :archive do
+  desc "Extract archive to current path. Provide SRC with name of archive."
+  task :extract => 'misc:helpers' do
+    
+    archives = [
+      ['tar.gz',  'tar xzfv'],
+      ['tar.bz2', 'tar xjfv']
+    ]
+    
+    # add sugar
+    class << archives
+      def types; transpose[0];end
+    end
+    
+    unless src = ENV['SRC']
+      err <<-MSG
+        Provide SRC with the name of the archive.
+        Supported archive types: #{archives.types.join(", ")}
+      MSG
+    end
+    
+    archive_type, cmd = archives.find{|type, cmd| !src.scan(%r{.#{type}$}).empty?}
+    
+    unless archive_type
+      err <<-TEXT
+        Requested archive type is not supported.
+        Use any of: #{archives.types.join(", ")}
+      TEXT
+    end
+    
+    cmd << " #{src}"
+    
+    sh cmd
+  end
+end

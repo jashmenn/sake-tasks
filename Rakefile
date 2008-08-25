@@ -1,5 +1,3 @@
-require "helpers"
-
 desc "Install sake tasks, uninstalling any pre-existing tasks first; can pass ONLY_FILES and ONLY_TASKS env vars"
 task :install do
   task_files = Dir['**/*.sake']
