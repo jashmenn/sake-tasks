@@ -3,12 +3,5 @@ namespace :misc do
     def err(msg)
       abort(msg.gsub(/^ +/,'').strip)
     end
-
-    class Object
-      def returning(value)
-        yield(value)
-        value
-      end
-    end
   end
 end
