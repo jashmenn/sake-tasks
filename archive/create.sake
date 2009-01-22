@@ -1,5 +1,5 @@
 namespace :archive do
-  desc "Create archive in current path. Provide SRC as <path-to-file>.<archive-type>."
+  desc "Create an archive in current path [a=path/to/large_folder.tar.gz]"
   task :create => 'misc:helpers' do
     
     archives = [
@@ -12,10 +12,10 @@ namespace :archive do
       def types; transpose[0];end
     end
     
-    unless requested = ENV['SRC']
+    unless requested = ENV['a']
       err <<-MSG
-        Please provide SRC as <path-to-file>.<archive-type>.
-        Supported archive types: #{archives.types.join(", ")}.
+        Please provide an archive name [a=path/to/large/folder.tar.gz]
+        Supported archive types: #{archives.types.join(", ")}
       MSG
     end
     
@@ -24,7 +24,7 @@ namespace :archive do
     unless archive_type
       err <<-TEXT
         Requested archive type is not supported.
-        Use any of: #{archives.types.join(", ")}.
+        Use any of: #{archives.types.join(", ")}
       TEXT
     end
     

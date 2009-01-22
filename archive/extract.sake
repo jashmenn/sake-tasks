@@ -1,5 +1,5 @@
 namespace :archive do
-  desc "Extract archive to current path. Provide SRC with name of archive."
+  desc "Extract archive to current path [a=path/to/archive.tar.gz]"
   task :extract => 'misc:helpers' do
     
     archives = [
@@ -12,9 +12,9 @@ namespace :archive do
       def types; transpose[0];end
     end
     
-    unless src = ENV['SRC']
+    unless src = ENV['a']
       err <<-MSG
-        Provide SRC with the name of the archive.
+        Please provide an archive name [a=path/to/archive.tar.gz]
         Supported archive types: #{archives.types.join(", ")}
       MSG
     end
