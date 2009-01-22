@@ -1,0 +1,6 @@
+namespace :mysql do
+  desc "Launch mysql shell."
+  task :console => 'mysql:params' do
+    sh "mysql #{ENV['MYSQL_PARAMS']}"
+  end
+end

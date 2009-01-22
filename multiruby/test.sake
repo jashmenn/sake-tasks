@@ -1,0 +1,14 @@
+namespace 'multiruby' do
+  desc "Runs tests in current project against multiruby"
+  task :test do
+    default_ruby_flags = "-w -I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
+    ruby_flags         = ENV['RUBY_FLAGS'] || default_ruby_flags
+    filter             = ENV['FILTER']
+    test_globs         = ENV['TEST'] ? [ENV['TEST']] : ['test/**/test_*.rb']
+    tests              = ['rubygems', 'test/unit'] +
+      test_globs.map { |g| Dir.glob(g) }.flatten
+    tests.map! {|f| %Q(require "#{f}")}
+    cmd = "#{ruby_flags} -e '#{tests.join("; ")}' #{filter}"
+    system "multiruby #{cmd}"
+  end
+end

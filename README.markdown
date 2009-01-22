@@ -67,20 +67,24 @@ To run the local version of foo/bar/baz.sake, use:
 
 ### Installing individual tasks/files
 
-The `rake install` task can selectively install only tasks/files that you are working on, rather than all the files in your repository, using either the `ONLY_FILES` or `ONLY_TASKS` environment variable.
+You can selectively install only tasks/files that you are working on, rather than all the files in your repository, or just install the most recently modified sake file.
 
-For example, to restrict `rake install` to only re-install a task `foo:bar:baz` you can either use:
+To install the latest modified sake file:
 
-	rake install ONLY_FILES=foo/bar/baz.sake
-	rake install ONLY_TASKS=foo:bar:baz
+	rake install:latest
+
+To restrict `rake install` to only re-install a task `foo:bar:baz` you can either use:
+
+	rake install:file f=foo/bar/baz.sake
+	rake install:task t=foo:bar:baz
 
 The values can be comma-separated lists.
 
 So for iterative install & run development you could run the install task and the sake task via the same command line:
 
-	rake install ONLY_TASKS=foo:bar:baz && sake foo:bar:baz --trace
+	rake install:task t=foo:bar:baz && sake foo:bar:baz --trace
 
-The optional `--trace` runs sake in trace mode so useful stacktrace information is given as necessary.
+The optional `--trace` runs sake in trace mode so useful stacktrace information is given as necessary. Ultimately you'd probably use `rake testrun foo:bar:baz` as above.
 
 ### TextMate users
 

@@ -1,0 +1,24 @@
+namespace 'github' do
+  namespace 'pages' do
+    desc "Creates the gh-pages branch, and links to it as 'website' as submodule"
+    task :setup do
+      current_branch = `git branch | grep "^*" | sed -e "s/* //"`.strip
+      repo = `git config --list | grep "^remote.origin.url" | sed -e "s/remote.origin.url=//"`.strip
+      puts "Working in #{current_branch} branch of #{repo}:"
+      commands = <<-CMD.gsub(/^      /, '')
+      git symbolic-ref HEAD refs/heads/gh-pages
+      rm .git/index
+      git clean -fdx
+      echo "My GitHub Page" > index.html
+      git add .
+      git commit -a -m 'First gh-pages commit'
+      git push origin gh-pages
+      git checkout #{current_branch}
+      git submodule add -b gh-pages #{repo} website
+      git commit -a -m "website -> gh-pages folder"
+      git push
+      CMD
+      commands.split(/\n/).each { |cmd| sh cmd }
+    end
+  end
+end

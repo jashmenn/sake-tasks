@@ -1,0 +1,13 @@
+namespace 'git' do
+  namespace 'ignore' do
+    desc 'Ignore build and user-specific files in Xcode projects.'
+    task :xcode do
+      xcode_ignores = %w{ build *.xcodeproj/* !*.xcodeproj/project.pbxproj }.join("\n") + "\n"
+      File.open(".gitignore", "a+") do |gitignore|
+        gitignore.rewind
+        current_ignores = gitignore.read
+        (gitignore << xcode_ignores) unless current_ignores.include?(xcode_ignores)
+      end
+    end
+  end
+end

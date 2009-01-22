@@ -1,0 +1,2 @@
+desc "Runs any tests or specs in current project against multiruby"
+task :multiruby => ["multiruby:test", "multiruby:spec"]

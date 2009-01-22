@@ -1,0 +1,16 @@
+namespace 'multiruby' do
+  namespace 'gems' do
+    desc "Install GEM=gemname or GEMS=gem1,gem2 into each multiruby gem cache"
+    task :install do
+      unless gems = ENV['GEM'] || ENV['GEMS']
+        puts <<-EOS.gsub(/        /,'')
+        Usage:
+        sake multiruby:gems:install GEM=gemname
+        sake multiruby:gems:install GEMS=gem1,gem2
+        EOS
+      end
+      gems = gems.split(/,\s*/)
+      sh "multiruby -S gem install --no-ri --no-rdoc --development #{gems.join(' ')}"
+    end
+  end
+end

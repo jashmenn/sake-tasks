@@ -15,7 +15,7 @@ namespace :ssh do
       else abort "The key you provided via the command line does not exist!"
       end
     else
-      discovered_key = %w[id_rsa id_dsa identity].detect { |f| File.exists?("#{ENV['HOME']}/.ssh/#{f}.pub") }
+      discovered_key = %w[id_rsa id_dsa identity].map { |f| "#{ENV['HOME']}/.ssh/#{f}.pub" }.detect { |f| File.exists?(f) }
       if discovered_key then discovered_key
       else abort <<-EOS
 I wasn't able to discover your public key.  I tried to find id_rsa.pub, id_dsa.pub,
@@ -31,13 +31,14 @@ passing public_key_path via the command line.
 
     h.say "I need some information to SSH into the server."
     hostname = h.ask("Remote Hostname: ") { |q| q.validate = not_blank }
+    port = h.ask("Remote port: ") { |q| q.default = 22 }
     username = h.ask("Username, enter for default: ") { |q| q.default = ENV["USER"] }
     password = h.ask("Password: ") { |q| q.echo = "*" }
 
     begin
-      Net::SSH.start(hostname, username, :password => password) do |ssh|
+      Net::SSH.start(hostname, username, :password => password, :port => port) do |ssh|
         puts "Uploading your public key... "
-        ssh.scp.upload! public_key_path, "my_public_key"
+        ssh.scp.upload! public_key, "my_public_key"
 
         puts "Creating '.ssh' directory in your home directory"
         ssh.exec!("mkdir .ssh")

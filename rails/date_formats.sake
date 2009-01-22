@@ -1,0 +1,39 @@
+#
+#  date_formats.sake
+#
+#  adapted from: http://www.onrails.org/articles/2008/08/20/what-are-all-the-rails-date-formats
+#
+
+namespace :rails do
+  desc "Show the date/time format strings defined and example output"
+  task :date_formats do
+
+    def no_environment
+      puts "\nPrerequisite task :environment not found."
+      no_rails
+    end
+
+    def no_rails
+      puts "\nThis task must be run within the context of the root of a Rails application.\n\n"
+      exit
+    end
+
+    !Rake::Task.task_defined?(:environment) ? no_environment : Rake::Task[ :environment ].invoke
+
+    no_rails if Module.const_defined?('RAILS_ENV')
+
+    now = Time.now
+    [:to_date, :to_datetime, :to_time].each do |conv_meth|
+      obj = now.send(conv_meth)
+      puts obj.class.name
+      puts "=" * obj.class.name.length
+      name_and_fmts = obj.class::DATE_FORMATS.map { |k, v| [k, %Q('#{String === v ? v : '&proc'}')] }
+      max_name_size = name_and_fmts.map { |k, _| k.to_s.length }.max + 2
+      max_fmt_size = name_and_fmts.map { |_, v| v.length }.max + 1
+      name_and_fmts.each do |format_name, format_str|
+        puts sprintf("%#{max_name_size}s:%-#{max_fmt_size}s %s", format_name, format_str, obj.to_s(format_name))
+      end
+      puts
+    end
+  end
+end

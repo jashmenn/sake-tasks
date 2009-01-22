@@ -10,6 +10,7 @@ namespace :git do
       end
       puts "Installing manpages for git #{git_version}"
       require "fileutils"
+      FileUtils.mkdir_p "/usr/local/share/man"
       FileUtils.chdir '/tmp' do
         puts "Downloading and unpacking manpages in #{`pwd`}"
         `curl -O "http://kernel.org/pub/software/scm/git/git-manpages-#{git_version}.tar.bz2"`
