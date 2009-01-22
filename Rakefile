@@ -27,11 +27,11 @@ namespace :install do
   desc "Install specified file(s) [f=load,params] (no need to include .sake extension)"
   task :file do
     files = ENV['f'].split(',') rescue []
-    files.collect { |f| f.sub('.sake', '') }
+    stripped_files = files.collect { |f| f.sub('.sake', '') }
   
     Dir["**/*.sake"].find do |task_file|
       stripped_name = task_file.sub('.sake', '')
-      if files.include?(stripped_name)
+      if stripped_files.include?(stripped_name)
         tasks = Sake::TasksFile.parse(task_file).tasks
         uninstall_tasks(tasks)
         puts `sake -i #{task_file}`
