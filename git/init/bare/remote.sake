@@ -1,0 +1,90 @@
+# http://gist.github.com/22673
+# Nate Murray 2008
+# based on ssh:install_public_key 
+namespace :git do
+  namespace :init do
+    namespace :bare do
+      desc "Init a new bare repository on a foreign server"
+      task :remote do
+        begin
+          (
+          require("rubygems")
+          require("net/ssh")
+          require("net/scp")
+          require("highline")
+          require("pp")
+          )
+        rescue LoadError
+          abort("There was a problem loading net-ssh, net-scp, pp, or highline.  Please make sure you have them installed via RubyGems.")
+        end
+
+        discovered_keys = (["id_rsa", "id_dsa", "identity"].collect do |f|
+           file = "#{ENV["HOME"]}/.ssh/#{f}"
+           File.exists?(file) ?  file : nil
+        end).compact
+
+        h = HighLine.new
+        not_blank = Proc.new { |s| (not s.empty?) }
+        def not_blank.to_s
+          "not blank"
+        end
+
+        # todo, abstract to a config file somewhere
+        defaults = {
+          :hostname => nil, 
+          :username => nil
+        }
+
+        h.say("I need some information to SSH into the server.")
+        hostname = h.ask("Remote Hostname: ") { |q| q.validate = not_blank; q.default = defaults[:hostname] }
+        username = h.ask("Username, enter for default: ") { |q| q.default = defaults[:username] || ENV["USER"] }
+        (password = h.ask("Password: ") { |q| q.echo = "*" }) unless discovered_keys.size > 0
+        repo_containing_folder = h.ask("Path to folder containing repo: ") { |q| q.validate = not_blank; q.default = "~/git" }
+        project_name = h.ask("Project name [example 'myproj']: ") { |q| q.validate = not_blank }
+        full_remote_repo_path = nil
+
+        begin
+          net_ssh_opts = {}
+          net_ssh_opts[:password] = password if password
+          net_ssh_opts[:keys] = discovered_keys if discovered_keys.size > 0
+          Net::SSH.start(hostname, username, net_ssh_opts) do |ssh|
+            def ssh.sexec!(cmd); puts cmd; exec! cmd; end
+            git_folder = File.join(repo_containing_folder, project_name + ".git")
+            puts("Creating #{git_folder}... ")
+            ssh.sexec!("mkdir -p #{git_folder}")
+            puts("Initializing #{git_folder}... ")
+            ssh.sexec!("cd #{git_folder} && git --bare init")
+            full_remote_repo_path = ssh.exec!("cd #{git_folder} && pwd").strip
+          end
+        rescue Net::SSH::AuthenticationFailed
+          puts("\nThere was a problem authenticating you.")
+        end
+
+        should_create = h.ask("Do you want to create this repository in ./#{project_name}? [Y/n]: ") { |q| q.default = "y" }
+        cmds = [
+          "mkdir #{Rake.original_dir}/#{project_name} && cd #{Rake.original_dir}/#{project_name}",
+          "git init",
+          "echo 'created' > README", 
+          "git add README && git commit -m 'initial import'", 
+          "git remote add origin #{username}@#{hostname}:#{full_remote_repo_path}",
+          "git push origin master"
+        ]
+
+        if should_create =~ /^y/i
+          cmds.each do |cmd|
+            new_cmd = (cmd =~ / cd /) ? cmd : "cd #{Rake.original_dir}/#{project_name} && #{cmd}" 
+            puts cmd
+            %x{#{new_cmd}}
+          end
+        else
+          puts("\nAll done! To enjoy your new repository:")
+          puts cmds.join("\n")
+        end
+
+      end
+
+    end
+  end
+end
+
+# vim: set ft=ruby
